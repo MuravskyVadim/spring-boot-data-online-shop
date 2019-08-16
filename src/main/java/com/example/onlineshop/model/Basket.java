@@ -25,14 +25,13 @@ import javax.persistence.JoinTable;
 @Getter
 @EqualsAndHashCode
 @ToString
-
 @Entity
 @Table(name = "baskets", schema = "spring_shop")
 public class Basket {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id")
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)

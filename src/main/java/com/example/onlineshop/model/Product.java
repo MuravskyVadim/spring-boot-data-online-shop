@@ -16,14 +16,13 @@ import javax.persistence.GenerationType;
 @Getter
 @EqualsAndHashCode
 @ToString
-
 @Entity
 @Table(name = "products", schema = "spring_shop")
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "name", length = 255)

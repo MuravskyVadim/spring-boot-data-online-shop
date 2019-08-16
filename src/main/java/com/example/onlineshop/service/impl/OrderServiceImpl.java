@@ -22,9 +22,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Long addOrder(Order order) {
-        Order ord = orderJpaRepository.saveAndFlush(order);
-        return ord.getId();
+    public void addOrder(Order order) {
+        orderJpaRepository.save(order);
     }
 
     @Override

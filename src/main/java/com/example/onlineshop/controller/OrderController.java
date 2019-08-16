@@ -8,6 +8,7 @@ import com.example.onlineshop.service.interfaces.BasketService;
 import com.example.onlineshop.service.interfaces.CodeService;
 import com.example.onlineshop.service.interfaces.OrderService;
 import com.example.onlineshop.service.interfaces.MailService;
+import com.example.onlineshop.util.OrderStatus;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,9 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.util.Objects;
 import java.util.Optional;
 
 @Controller
@@ -51,7 +49,6 @@ public class OrderController {
             @RequestParam("street") String street,
             @RequestParam("houseNumber") String houseNumber,
             @RequestParam("phoneNumber") String phoneNumber,
-            HttpServletRequest request,
             ModelMap model) {
         try {
             if (!firstName.isEmpty() && !lastName.isEmpty() && !city.isEmpty()
@@ -64,8 +61,7 @@ public class OrderController {
                 if (basketByUserId.isPresent()) {
                     Order order = new Order(basketByUserId.get(), user, code,
                             firstName, lastName, city, street, houseNumber, phoneNumber);
-                    HttpSession session = request.getSession();
-                    session.setAttribute("order", order);
+                    orderService.addOrder(order);
                     return "code";
                 } else {
                     logger.warn("Basket by user id " + user.getId() + " not exist");
@@ -82,21 +78,18 @@ public class OrderController {
     @PostMapping("/code")
     public ModelAndView confirmCode(
             ModelMap model,
-            @RequestParam("code") String userCode,
-            HttpServletRequest request) {
-        Order order = (Order) request.getSession().getAttribute("order");
-        try {
-            if (Objects.nonNull(order) && userCode.equals(order.getCode().getValue())) {
-                Long orderId = orderService.addOrder(order);
-                model.addAttribute("message",
-                        "Order #" + orderId + " successfully placed");
-                return new ModelAndView("code");
-            } else {
-                model.addAttribute("message", "Incorrect code!!!");
-                return new ModelAndView("code");
-            }
-        } catch (NullPointerException e) {
-            model.addAttribute("message", "Wrong data!!!");
+            @AuthenticationPrincipal User user,
+            @RequestParam("code") String userCode) {
+        Optional<Order> orderByUserId = orderService.getOrderByUserId(user.getId());
+        if (orderByUserId.isPresent() && userCode.equals(orderByUserId.get().getCode().getValue())) {
+            Order order = orderByUserId.get();
+            order.setOrderStatus(OrderStatus.CONFIRM);
+            orderService.addOrder(order);
+            model.addAttribute("message",
+                    "Order #" + order.getId() + " successfully placed");
+            return new ModelAndView("code");
+        } else {
+            model.addAttribute("message", "Incorrect code!!!");
             return new ModelAndView("code");
         }
     }

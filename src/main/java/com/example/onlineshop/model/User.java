@@ -22,14 +22,13 @@ import java.util.List;
 @Getter
 @ToString
 @EqualsAndHashCode
-
 @Entity
 @Table(name = "users", schema = "spring_shop")
 public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", unique = true, nullable = false)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "email", length = 50, unique = true, nullable = false)
